@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container">
+  <div class="text-center">
+    <img src="{% static 'img/atendimento_banner.jpg' %}" class="img-fluid" width="400px" 
+    style="margin-bottom: 30px; border-radius: 20px; margin-top: 50px;" alt="banner-principal">
+  </div>
+  <div class="text-center"><h2>Lista de Pacientes</h2></div>
+  <hr>
+  
+  <div>
+    <div class="d-flex justify-content-between mb-3">
+      <button type="button" class="btn default-color" data-bs-toggle="modal" data-bs-target="#filterModal">
+        Filtros <i class='bx bx-filter-alt'></i>
+      </button>
+    </div>
+  </div>
+  
+  <br>
+  
+  {% if page_obj %}
+  <div class="card">
+    <div class="table-responsive"> 
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Data de Nascimento</th>
+            <th scope="col">Gênero</th>
+            <th scope="col">Endereço</th>
+            <th scope="col">Telefone</th>
+            <th scope="col">Data de Criação</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          {% for patient in page_obj %}
+          <tr style="cursor:pointer;">
+            <th scope="row">{{ forloop.counter }}</th>
+            <td><a href="{% url 'edit-patients' patient.id %}">{{ patient.nome | upper }}</a></td>
+            <td> <a href="{% url 'edit-patients' patient.id %}">{{ patient.data_nascimento | date:"d/m/Y" }}</a> </td>
+            <td> <a href="{% url 'edit-patients' patient.id %}">{{ patient.genero | upper }}</a></td>
+            <td> <a href="{% url 'edit-patients' patient.id %}">{{ patient.endereco | upper }}</a></td>
+            <td><a href="{% url 'edit-patients' patient.id %}">{{ patient.telefone | upper }}</a> </td>
+            <td> <a href="{% url 'edit-patients' patient.id %}">{{ patient.data_criacao | date:"d/m/Y H:i" }}</a> </td>
+            {% if patient.get_avaliacao %}
+              <td>
+                <a href="{% url 'edit-assessment' patient.get_assessment.id patient.id %}" 
+                class="btn default-color"> Avalicao
+                </a>
+              </td>
+            {% else %}
+              <td ><a href="{% url 'register-assessment'  patient.id %}" class="btn default-color"> Avalicao</a></td>
+            {% endif %}  
+              <td><button type="button" data-patient-id="{{ patient.id }}"  class="btn btn-danger-color delete-button">Excluir</button></td>
+          </tr> 
+          {% empty %}
+          <tr>
+            <th scope="row">1</th>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>    
+          {% endfor %}
+        </tbody>
+      </table>
+    </div> 
+  </div>
+  
+  <div class="pagination">
+    {% include "paginate.html" %}
+  </div>
+  
+  <div>
+    <p>Itens {{ count }} </p>
+    <hr>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="filterModalLabel">Filtros</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="get" action="">
+          <div class="form-group">
+            <label for="id_nome">Nome:</label>
+            {{ filter.form.nome }}
+          </div>
+          <div class="form-group">
+            <label for="id_nome">Gênero:</label>
+            {{ filter.form.genero }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_data_nascimento">Data da Avaliação Inicial:</label>
+            <input type="text" name="data_nascimento_after" class="form-control"  id="id_data_nascimento_0">
+            
+        </div>
+        <div class="form-group">
+          <label for="id_data_nascimento">Data da Avaliação Final:</label>
+          
+          <input type="text" name="data_nascimento_before" class="form-control" id="id_data_nascimento_1">
+        </div>
+          
+          <br>
+          
+          <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+          </div>
+          
+        </form>
+        
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+<script >
+  
+$(document).ready(function(){
+  flatpickr("#id_data_nascimento_0", {
+        dateFormat: "d/m/Y",  
+        altInput: true,       
+        altFormat: "d/m/Y",   
+        allowInput: true      
+    });
+
+    flatpickr("#id_data_nascimento_1", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "d/m/Y",
+        allowInput: true
+    });
+})
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const deleteButtons = document.querySelectorAll('.delete-button');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const patientId = this.getAttribute('data-patient-id');
+
+            Swal.fire({
+                title: 'Tem certeza que deseja excluir esse paciente?',
+                text: 'Após confirmar essa ação ela não poderá ser revertida.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar',
+                confirmButtonColor: '#5cb874',
+                cancelButtonText: 'Cancelar',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `{% url 'delete-patient' 0 %}`.replace('0', patientId);
+                }
+            });
+        });
+    });
+});
+
+
+</script>
+
+{% endblock %}

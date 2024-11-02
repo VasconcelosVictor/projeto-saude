@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-top: 70px;" class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-header text-center">
+                {% if patient %}
+                    <h4>Editar Paciente</h4>
+                {% else %}
+                    <h4>Cadastrar Paciente</h4>
+                {% endif %}
+                    
+                </div>
+                <div class="card-body">
+                
+                  <form method="post" action="">
+                      {% csrf_token %}
+                      {{ form.non_field_errors }}
+                      <div class="form-group">
+                          <label for="id_nome">Nome:</label>
+                          {{ form.nome }}
+                          <div class="smal-erros">
+                              {{ form.nome.errors }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label for="id_data_nascimento">Data de Nascimento:</label>
+                          {{ form.data_nascimento }}
+                          <div class="smal-erros">
+                              {{ form.data_nascimento.errors }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label for="id_genero">Genero:</label>
+                          {{ form.genero }}
+                          <div class="smal-erros">
+                              {{ form.genero.errors }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label for="id_endereco">Endereço:</label>
+                          {{ form.endereco }}
+                          <div class="smal-erros">
+                              {{ form.endereco.errors }}
+                          </div>
+                      </div>
+                      <div class="form-group ">
+                          <label for="id_telefone">Telefone:</label>
+                          {{ form.telefone }}
+                          <div class="smal-erros">
+                              {{ form.telefone.errors }}
+                          </div>
+                      </div>
+                      <div class="form-group  text-center">
+                        <button type="submit" class="btn  default-color w-100 mt-3">Salvar</button>
+                      </div>
+                      
+                  </form>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+{% endblock %}

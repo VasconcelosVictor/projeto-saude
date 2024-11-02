@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container">
+  <div class="text-center">
+    <img src="{% static 'img/historico.jpg' %}" class="img-fluid" width="400px" 
+    style="margin-bottom: 30px; border-radius: 20px; margin-top: 50px;" alt="banner-principal">
+  </div>
+  <div class="text-center"><h2>Histórico de Avaliações</h2></div>
+  <hr>
+  
+  <div>
+    <div class="d-flex justify-content-between mb-3">
+      <button type="button" class="btn default-color" data-bs-toggle="modal" data-bs-target="#filterModal">
+        Filtros <i class='bx bx-filter-alt'></i>
+      </button>
+    </div>
+  </div>
+
+  <br>
+  
+  {% if page_obj %}
+  <div class="card">
+    <div class="table-responsive"> 
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Usuário</th>
+            <th scope="col">Paciente</th>
+            <th scope="col">Data da Avalição</th>
+            <th scope="col">Sintomas</th>
+            <th scope="col">Diagnostico</th>
+            <th scope="col">Observações</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          {% for assessment in page_obj %}
+          <tr style="cursor:pointer;">
+            <th scope="row">{{ forloop.counter }}</th>
+            <td><a href="{% url 'edit-assessment' assessment.id assessment.paciente.id %}">{{ assessment.user | upper }}</a></td>
+            <td><a href="{% url 'edit-assessment' assessment.id assessment.paciente.id %}">{{ assessment.paciente | upper }}</a></td>
+            <td><a href="{% url 'edit-assessment' assessment.id assessment.paciente.id %}">{{ assessment.data_avalicao | date:"d/m/Y"  }}</a></td>
+            <td><a href="{% url 'edit-assessment' assessment.id assessment.paciente.id %}">{{ assessment.sintomas | upper }}</a></td>
+            <td><a href="{% url 'edit-assessment' assessment.id assessment.paciente.id %}">{{ assessment.diagnostico_preliminar | upper }}</a></td>
+            <td><a href="{% url 'edit-assessment' assessment.id assessment.paciente.id %}">{{ assessment.observacoes | upper }}</a></td>
+            <td><button type="button" data-assessment-id="{{ assessment.id }}"  class="btn btn-danger-color delete-button">Excluir</button></td>
+          </tr> 
+          {% empty %}
+          <tr>
+            <th scope="row">1</th>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>    
+          {% endfor %}
+        </tbody>
+      </table>
+    </div> 
+  </div>
+  
+  <div class="pagination">
+    {% include "paginate.html" %}
+  </div>
+  
+  <div>
+    <p id="t">Itens {{ count }} </p>
+    <hr>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="filterModalLabel">Filtros</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="get" action="">
+          <div class="form-group">
+            <label for="id_paciente">Paciente:</label>
+            {{ filter.form.paciente }}
+          </div>
+          <div class="form-group">
+            <label for="id_sintomas">Sintomas:</label>
+            {{ filter.form.sintomas }}
+          </div>
+
+        <div class="form-group">
+            <label for="id_data_avalicao">Data da Avaliação Inicial:</label>
+            <input type="text" name="data_avalicao_after" class="form-control"  id="id_data_avalicao_0">
+            
+        </div>
+        <div class="form-group">
+          <label for="id_data_avalicao">Data da Avaliação Final:</label>
+          
+          <input type="text" name="data_avalicao_before" class="form-control" id="id_data_avalicao_1">
+        </div>
+          
+          <br>
+          <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+<script>
+
+  
+    flatpickr("#id_data_avalicao_inicial", {
+        dateFormat: "d/m/Y",  // Formato de data DD/MM/AAAA
+        altInput: true,       // Mostra um campo formatado
+        altFormat: "d/m/Y",   // Formato exibido ao usuário
+        allowInput: true ,
+        locale: "pt"       // Permite inserir manualmente a data
+    });
+
+    flatpickr("#id_data_avalicao_final", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "d/m/Y",
+        allowInput: true,
+        locale: "pt"  
+    });
+
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const deleteButtons = document.querySelectorAll('.delete-button');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const patientId = this.getAttribute('data-assessment-id');
+
+            Swal.fire({
+                title: 'Tem certeza que deseja excluir essa avaliação?',
+                text: 'Após confirmar essa ação ela não poderá ser revertida.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar',
+                confirmButtonColor: '#5cb874',
+                cancelButtonText: 'Cancelar',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `{% url 'delete-assessment' 0 %}`.replace('0', patientId);
+                }
+            });
+        });
+    });
+});
+
+</script>
+
+{% endblock %}
